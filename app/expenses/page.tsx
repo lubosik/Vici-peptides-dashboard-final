@@ -64,6 +64,7 @@ export default async function ExpensesPage({ searchParams }: ExpensesPageProps) 
       total: 0,
       thisMonth: 0,
       average: 0,
+      expensesByCategory: [],
     }
   }
 
@@ -293,7 +294,7 @@ export default async function ExpensesPage({ searchParams }: ExpensesPageProps) 
           </Card>
 
           {/* Expenses Chart */}
-          <ExpensesChart data={expenseSummary.expensesByCategory} />
+          <ExpensesChart data={expenseSummary.expensesByCategory || []} />
         </div>
       </main>
     </div>

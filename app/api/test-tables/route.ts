@@ -38,10 +38,15 @@ export async function GET(request: Request) {
       .limit(5)
 
     // Get column info
-    const { data: columnInfo } = await adminClient
-      .rpc('get_table_columns', { table_name: table })
-      .single()
-      .catch(() => ({ data: null }))
+    let columnInfo = null
+    try {
+      const result = await adminClient
+        .rpc('get_table_columns', { table_name: table })
+        .single()
+      columnInfo = result.data
+    } catch (error) {
+      columnInfo = null
+    }
 
     return NextResponse.json({
       success: true,

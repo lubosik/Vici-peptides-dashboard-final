@@ -12,7 +12,13 @@ import { ExpensesChart } from '@/components/charts/expenses-chart'
 export default async function AnalyticsPage() {
   const supabase = await createClient()
 
-  let revenueData, topProducts, netProfitData, expenseSummary, ordersWithCoupons, shippingData, statusData
+  let revenueData: any[] = []
+  let topProducts: any[] = []
+  let netProfitData: any[] = []
+  let expenseSummary: any = { total: 0, thisMonth: 0, average: 0, expensesByCategory: [] }
+  let ordersWithCoupons: any[] = []
+  let shippingData: any[] = []
+  let statusData: any[] = []
   let hasError = false
   let errorMessage = ''
 

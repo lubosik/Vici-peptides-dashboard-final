@@ -23,29 +23,13 @@ export const dynamic = 'force-dynamic' // Always generate on-demand
 
 /**
  * Generate static params for existing orders (optional - for better performance)
- * This pre-generates pages for known orders, but doesn't restrict to only these
+ * Since we're using force-dynamic, this won't be used for static generation,
+ * but we keep it to return empty array to avoid build errors
  */
 export async function generateStaticParams() {
-  try {
-    const { createClient } = await import('@/lib/supabase/server')
-    const supabase = await createClient()
-    
-    // Get all order numbers (limit to recent orders for performance)
-    const { data: orders } = await supabase
-      .from('orders')
-      .select('order_number')
-      .order('order_date', { ascending: false })
-      .limit(1000) // Pre-generate pages for last 1000 orders
-    
-    if (!orders) return []
-    
-    return orders.map((order) => ({
-      orderNumber: encodeURIComponent(order.order_number),
-    }))
-  } catch (error) {
-    console.error('Error generating static params for orders:', error)
-    return []
-  }
+  // With force-dynamic, pages are generated on-demand at runtime
+  // Return empty array to avoid any build-time errors
+  return []
 }
 
 export default async function OrderDetailPage({ params }: OrderDetailPageProps) {

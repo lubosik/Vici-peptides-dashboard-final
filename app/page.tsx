@@ -11,6 +11,9 @@ import { formatCurrency, formatPercent } from '@/lib/metrics/calculations'
 import { WelcomeTour } from '@/components/onboarding/welcome-tour'
 import { DashboardClient } from '@/components/dashboard/dashboard-client'
 
+// Force dynamic rendering to prevent build-time errors when env vars aren't available
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardPage() {
   const supabase = await createClient()
   

@@ -10,6 +10,9 @@ import { formatCurrency, formatPercent } from '@/lib/metrics/calculations'
 import Link from 'next/link'
 import { Search, Download, ChevronLeft, ChevronRight } from 'lucide-react'
 
+// Force dynamic rendering to prevent build-time errors when env vars aren't available
+export const dynamic = 'force-dynamic'
+
 interface OrdersPageProps {
   searchParams: {
     page?: string

@@ -12,6 +12,9 @@ import { Plus, Search, Download, ChevronLeft, ChevronRight } from 'lucide-react'
 import { ExpensesChart } from '@/components/charts/expenses-chart'
 import { AddExpenseDialog } from '@/components/expenses/add-expense-dialog'
 
+// Force dynamic rendering to prevent build-time errors when env vars aren't available
+export const dynamic = 'force-dynamic'
+
 interface ExpensesPageProps {
   searchParams: {
     page?: string

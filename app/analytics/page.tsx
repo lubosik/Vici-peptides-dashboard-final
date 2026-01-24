@@ -9,6 +9,9 @@ import { getNetProfitOverTime } from '@/lib/metrics/net-profit'
 import { getExpenseSummary } from '@/lib/queries/expenses'
 import { ExpensesChart } from '@/components/charts/expenses-chart'
 
+// Force dynamic rendering to prevent build-time errors when env vars aren't available
+export const dynamic = 'force-dynamic'
+
 export default async function AnalyticsPage() {
   const supabase = await createClient()
 

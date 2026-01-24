@@ -12,6 +12,9 @@ import { Search, Package, AlertTriangle, CheckCircle, XCircle, ChevronLeft, Chev
 import { AddProductDialog } from '@/components/products/add-product-dialog'
 import { DeleteProductButton } from '@/components/products/delete-product-button'
 
+// Force dynamic rendering to prevent build-time errors when env vars aren't available
+export const dynamic = 'force-dynamic'
+
 interface ProductsPageProps {
   searchParams: {
     page?: string

@@ -5,6 +5,9 @@ import { NextResponse } from 'next/server'
  * Diagnostic endpoint to check line items in the database
  * Helps debug why line items aren't showing up
  */
+// Force dynamic rendering to prevent build-time errors
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: Request) {
   try {
     const supabase = await createClient()

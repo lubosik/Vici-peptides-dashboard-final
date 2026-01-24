@@ -1,0 +1,57 @@
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+
+export async function createClient() {
+  // Next.js automatically loads .env.local, but we need to ensure it's loaded
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    // Provide helpful error message with debugging info
+    const envInfo = {
+      hasUrl: !!supabaseUrl,
+      hasKey: !!supabaseAnonKey,
+      urlValue: supabaseUrl ? `${supabaseUrl.substring(0, 20)}...` : 'NOT SET',
+      keyValue: supabaseAnonKey ? `${supabaseAnonKey.substring(0, 20)}...` : 'NOT SET',
+    }
+    
+    console.error('Environment variables check:', envInfo)
+    
+    throw new Error(
+      `Missing Supabase environment variables.\n` +
+      `NEXT_PUBLIC_SUPABASE_URL: ${envInfo.hasUrl ? 'SET' : 'NOT SET'}\n` +
+      `NEXT_PUBLIC_SUPABASE_ANON_KEY: ${envInfo.hasKey ? 'SET' : 'NOT SET'}\n\n` +
+      `Please ensure:\n` +
+      `1. .env.local file exists in project root\n` +
+      `2. File is saved (no unsaved changes)\n` +
+      `3. Variables are named exactly: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY\n` +
+      `4. No quotes around values\n` +
+      `5. Server was restarted after creating/updating .env.local`
+    )
+  }
+
+  const cookieStore = await cookies()
+
+  return createServerClient(
+    supabaseUrl,
+    supabaseAnonKey,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {
+            // The `setAll` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
+        },
+      },
+    }
+  )
+}

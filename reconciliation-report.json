@@ -1,0 +1,42 @@
+{
+  "csvMetrics": {
+    "totalRevenue": 4335.93,
+    "totalProductCost": 574.2,
+    "totalShippingCostAbsorbed": 10.78,
+    "totalProfit": 3750.9500000000003,
+    "totalOrders": 35,
+    "totalUnitsSold": 47,
+    "averageOrderValue": 123.88371428571429,
+    "profitMargin": 86.50854603280035,
+    "roiPercent": 641.2099558959281,
+    "totalExpenses": 0,
+    "netProfit": 3750.9500000000003
+  },
+  "dbMetrics": {
+    "totalRevenue": 4335.93,
+    "totalProductCost": 574.1999999999999,
+    "totalShippingCostAbsorbed": 10.78,
+    "totalProfit": 3750.95,
+    "totalOrders": 35,
+    "totalUnitsSold": 47,
+    "averageOrderValue": 123.88371428571429,
+    "profitMargin": 86.50854603280034,
+    "roiPercent": 641.2099558959281,
+    "totalExpenses": 0,
+    "netProfit": 3750.95
+  },
+  "differences": {
+    "totalRevenue": 0,
+    "totalProductCost": 1.1368683772161603e-13,
+    "totalShippingCostAbsorbed": 0,
+    "totalProfit": 4.547473508864641e-13,
+    "totalOrders": 0,
+    "totalUnitsSold": 0,
+    "averageOrderValue": 0,
+    "profitMargin": 1.4210854715202004e-14,
+    "roiPercent": 0,
+    "totalExpenses": 0,
+    "netProfit": 4.547473508864641e-13
+  },
+  "passed": true
+}

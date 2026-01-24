@@ -191,6 +191,12 @@ export async function getProductById(
   supabase: SupabaseClient,
   productId: number
 ): Promise<ProductWithSales | null> {
+  // Check if this is a placeholder product ID
+  const placeholderIds = [203, 209, 212, 220, 221, 222]
+  if (placeholderIds.includes(productId)) {
+    return null
+  }
+
   const { data: product, error } = await supabase
     .from('products')
     .select(`
@@ -213,6 +219,13 @@ export async function getProductById(
     .single()
 
   if (error || !product) return null
+
+  // Check if product name matches placeholder pattern
+  const productName = (product.product_name || '').trim()
+  const isPlaceholder = /^Product\s+\d+$/i.test(productName)
+  if (isPlaceholder) {
+    return null
+  }
 
   // Get sales metrics
   // Join with orders to exclude draft/cancelled orders (no money exchanged)

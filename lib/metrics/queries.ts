@@ -224,17 +224,25 @@ export async function getTopProducts(
 
   if (linesError) throw linesError
 
-  // Get all products for names
-  const { data: products, error: productsError } = await supabase
+  // Get all products for names (exclude placeholder products)
+  const placeholderIds = [203, 209, 212, 220, 221, 222]
+  let productsQuery = supabase
     .from('products')
     .select('product_id, product_name')
+    .not('product_id', 'in', `(${placeholderIds.join(',')})`)
+
+  const { data: products, error: productsError } = await productsQuery
 
   if (productsError) throw productsError
 
-  // Create product name map
+  // Create product name map (filter out placeholder names)
   const productNameMap = new Map<number, string>()
   products?.forEach((p) => {
-    productNameMap.set(p.product_id, p.product_name)
+    const productName = (p.product_name || '').trim()
+    const isPlaceholder = /^Product\s+\d+$/i.test(productName)
+    if (!isPlaceholder) {
+      productNameMap.set(p.product_id, p.product_name)
+    }
   })
 
   // Aggregate by product
@@ -265,8 +273,15 @@ export async function getTopProducts(
   })
 
   // Convert to array, sort by revenue, and limit
+  // Also filter out placeholder products by name pattern
   const topProducts = Array.from(productMap.values())
-    .filter((p) => p.revenue > 0) // Only products with sales
+    .filter((p) => {
+      // Only products with sales
+      if (p.revenue <= 0) return false
+      // Exclude placeholder products
+      const isPlaceholder = /^Product\s+\d+$/i.test(p.productName)
+      return !isPlaceholder
+    })
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, limit)
 

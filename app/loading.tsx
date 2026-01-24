@@ -3,9 +3,9 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
 export default function Loading() {
   return (
-    <div className="flex h-screen bg-background">
-      <div className="w-64 border-r border-border bg-background" />
-      <main className="flex-1 overflow-y-auto">
+    <div className="flex min-h-screen bg-background">
+      <div className="hidden lg:block w-64 border-r border-border bg-background" />
+      <main className="flex-1 overflow-y-auto lg:ml-0">
         <div className="container mx-auto p-8">
           <div className="mb-8">
             <Skeleton className="h-9 w-48 mb-2" />

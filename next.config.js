@@ -1,14 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Ensure dynamic routes work properly
-  experimental: {
-    // Allow dynamic routes to be generated on-demand
+  // Optimize images
+  images: {
+    domains: [],
+    formats: ['image/avif', 'image/webp'],
   },
-  // Ensure all routes are properly handled
-  async rewrites() {
-    return []
-  },
+  // Ensure proper output for Vercel
+  output: 'standalone',
 }
 
 module.exports = nextConfig

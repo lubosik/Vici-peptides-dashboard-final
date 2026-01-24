@@ -91,9 +91,9 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       <Sidebar />
       <main className="flex-1 overflow-y-auto lg:ml-0">
         <div className="container mx-auto p-4 sm:p-6 lg:p-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground">Products</h1>
-            <p className="text-muted-foreground mt-2">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Products</h1>
+            <p className="text-sm sm:text-base text-muted-foreground mt-2">
               Product inventory and sales analytics
             </p>
             {hasError && (

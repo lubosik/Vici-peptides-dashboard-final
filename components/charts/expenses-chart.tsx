@@ -106,19 +106,19 @@ export function ExpensesChart({ data }: ExpensesChartProps) {
             </PieChart>
           </ResponsiveContainer>
           {/* Custom legend below chart to ensure proper alignment */}
-          <div className="mt-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 text-sm">
+          <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 text-sm">
             {chartData.map((entry, index) => {
               const total = chartData.reduce((sum, d) => sum + d.value, 0)
               const percent = total > 0 ? ((entry.value / total) * 100).toFixed(1) : '0.0'
               return (
-                <div key={entry.name} className="flex items-center gap-2">
+                <div key={entry.name} className="flex items-start gap-2 min-w-0">
                   <div
-                    className="w-3 h-3 rounded-full flex-shrink-0"
+                    className="w-3 h-3 rounded-full flex-shrink-0 mt-0.5"
                     style={{ backgroundColor: COLORS[index % COLORS.length] }}
                   />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate font-medium">{entry.name}</div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="font-medium truncate">{entry.name}</div>
+                    <div className="text-xs text-muted-foreground truncate">
                       {percent}% • ${entry.value.toLocaleString()}
                     </div>
                   </div>

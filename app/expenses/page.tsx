@@ -10,6 +10,7 @@ import { formatCurrency } from '@/lib/metrics/calculations'
 import Link from 'next/link'
 import { Plus, Search, Download, ChevronLeft, ChevronRight } from 'lucide-react'
 import { ExpensesChart } from '@/components/charts/expenses-chart'
+import { AddExpenseDialog } from '@/components/expenses/add-expense-dialog'
 
 interface ExpensesPageProps {
   searchParams: {
@@ -73,29 +74,28 @@ export default async function ExpensesPage({ searchParams }: ExpensesPageProps) 
       <Sidebar />
       <main className="flex-1 overflow-y-auto lg:ml-0">
         <div className="container mx-auto p-4 sm:p-6 lg:p-8">
-          <div className="mb-8 flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Expenses</h1>
-              <p className="text-muted-foreground mt-2">
-                Track and manage business expenses
-              </p>
-              {hasError && (
-                <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                    ⚠️ Error loading expenses: {errorMessage}
-                  </p>
-                </div>
-              )}
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline">
-                <Download className="mr-2 h-4 w-4" />
-                Export CSV
-              </Button>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Expense
-              </Button>
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Expenses</h1>
+                <p className="text-muted-foreground mt-2">
+                  Track and manage business expenses
+                </p>
+                {hasError && (
+                  <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                    <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                      ⚠️ Error loading expenses: {errorMessage}
+                    </p>
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline">
+                  <Download className="mr-2 h-4 w-4" />
+                  Export CSV
+                </Button>
+                <AddExpenseDialog categories={categories} />
+              </div>
             </div>
           </div>
 

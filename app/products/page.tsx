@@ -91,11 +91,14 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       <Sidebar />
       <main className="flex-1 overflow-y-auto lg:ml-0">
         <div className="container mx-auto p-4 sm:p-6 lg:p-8">
-          <div className="mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Products</h1>
-            <p className="text-sm sm:text-base text-muted-foreground mt-2">
-              Product inventory and sales analytics
-            </p>
+          <div className="mb-6 sm:mb-8 flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Products</h1>
+              <p className="text-sm sm:text-base text-muted-foreground mt-2">
+                Product inventory and sales analytics
+              </p>
+            </div>
+            <AddProductDialog />
             {hasError && (
               <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                 <p className="text-sm text-yellow-800 dark:text-yellow-200">
@@ -276,6 +279,13 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                         </TableCell>
                         <TableCell className="text-right">
                           {formatCurrency(product.total_profit)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DeleteProductButton
+                            productId={product.product_id}
+                            productName={product.product_name}
+                            wooProductId={product.woo_product_id}
+                          />
                         </TableCell>
                       </TableRow>
                     ))}

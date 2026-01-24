@@ -267,10 +267,6 @@ export async function getOrderWithLines(
       if (similarLines && similarLines.length > 0) {
         console.warn(`⚠️  Found similar order numbers (fuzzy match):`, similarLines.map(l => l.order_number))
       }
-    }('order_number', `%${actualOrderNumber.replace('Order #', '').replace('Order%20%23', '')}%`)
-      .limit(5)
-    if (similarLines && similarLines.length > 0) {
-      console.warn(`⚠️  Found similar order numbers:`, similarLines.map(l => l.order_number))
     }
   }
 

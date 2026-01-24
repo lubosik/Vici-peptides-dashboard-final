@@ -26,6 +26,7 @@ export interface ProductWithSales {
   retail_price: number | null
   unit_margin: number | null
   margin_percent: number | null
+  woo_product_id: number | null
   // Sales-derived metrics
   total_revenue: number
   total_cost: number

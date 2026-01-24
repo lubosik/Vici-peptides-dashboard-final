@@ -262,17 +262,6 @@ export async function getProductById(
     ? (sales.total_profit / sales.total_cost) * 100
     : null
 
-  // Check if this is a placeholder product
-  const productName = (product.product_name || '').trim()
-  const isPlaceholder = /^Product\s+\d+$/i.test(productName)
-  const placeholderIds = [203, 209, 212, 220, 221, 222]
-  const isPlaceholderId = placeholderIds.includes(product.product_id)
-
-  // Return null if it's a placeholder (caller should handle this)
-  if (isPlaceholder || isPlaceholderId) {
-    return null
-  }
-
   return {
     ...product,
     qty_sold: Number(product.qty_sold) || 0,

@@ -9,6 +9,8 @@ import { getProducts, getStockSummary } from '@/lib/queries/products'
 import { formatCurrency, formatPercent } from '@/lib/metrics/calculations'
 import Link from 'next/link'
 import { Search, Package, AlertTriangle, CheckCircle, XCircle, ChevronLeft, ChevronRight } from 'lucide-react'
+import { AddProductDialog } from '@/components/products/add-product-dialog'
+import { DeleteProductButton } from '@/components/products/delete-product-button'
 
 interface ProductsPageProps {
   searchParams: {

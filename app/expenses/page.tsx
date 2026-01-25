@@ -11,6 +11,7 @@ import Link from 'next/link'
 import { Plus, Search, Download, ChevronLeft, ChevronRight } from 'lucide-react'
 import { ExpensesChart } from '@/components/charts/expenses-chart'
 import { AddExpenseDialog } from '@/components/expenses/add-expense-dialog'
+import { DeleteExpenseButton } from '@/components/expenses/delete-expense-button'
 
 // Force dynamic rendering to prevent build-time errors when env vars aren't available
 export const dynamic = 'force-dynamic'
@@ -251,6 +252,7 @@ export default async function ExpensesPage({ searchParams }: ExpensesPageProps) 
                             Amount
                           </Link>
                         </TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -272,6 +274,12 @@ export default async function ExpensesPage({ searchParams }: ExpensesPageProps) 
                           </TableCell>
                           <TableCell className="text-right font-medium">
                             {formatCurrency(expense.amount)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <DeleteExpenseButton 
+                              expenseId={expense.expense_id} 
+                              description={expense.description}
+                            />
                           </TableCell>
                         </TableRow>
                       ))}

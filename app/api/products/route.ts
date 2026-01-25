@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 // Force dynamic rendering for API routes
 export const dynamic = 'force-dynamic'
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Sync to Supabase
-    const supabase = await createClient()
+    const supabase = createAdminClient()
     const { data: existing } = await supabase
       .from('products')
       .select('product_id')
@@ -128,7 +128,7 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    const supabase = await createClient()
+    const supabase = createAdminClient()
     
     // Get product to find WooCommerce ID
     let wooId: number | null = null

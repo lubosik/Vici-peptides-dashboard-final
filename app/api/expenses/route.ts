@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createExpense, updateExpense, deleteExpense } from '@/lib/queries/expenses'
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
 
 // GET - List expenses (for compatibility)
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const supabase = await createClient()
+    const supabase = createAdminClient()
 
     const category = searchParams.get('category')
     const dateFrom = searchParams.get('dateFrom')
@@ -41,14 +44,31 @@ export async function GET(request: NextRequest) {
 // POST - Create expense
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = createAdminClient()
     const body = await request.json()
+
+    // Validate required fields
+    if (!body.expense_date || !body.category || !body.description || !body.amount) {
+      return NextResponse.json(
+        { error: 'Missing required fields: expense_date, category, description, amount' },
+        { status: 400 }
+      )
+    }
+
+    // Validate amount
+    const amount = Number(body.amount)
+    if (isNaN(amount) || amount <= 0) {
+      return NextResponse.json(
+        { error: 'Amount must be a positive number' },
+        { status: 400 }
+      )
+    }
 
     const expense = await createExpense(supabase, {
       expense_date: body.expense_date,
       category: body.category,
       description: body.description,
-      amount: Number(body.amount),
+      amount: amount,
       vendor: body.vendor || null,
       notes: body.notes || null,
     })
@@ -56,8 +76,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(expense, { status: 201 })
   } catch (error) {
     console.error('Error creating expense:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Failed to create expense'
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to create expense' },
+      { 
+        error: errorMessage,
+        details: error instanceof Error ? error.stack : undefined
+      },
       { status: 500 }
     )
   }
@@ -66,7 +90,7 @@ export async function POST(request: NextRequest) {
 // PUT - Update expense
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = createAdminClient()
     const body = await request.json()
     const { expense_id, ...updates } = body
 
@@ -88,7 +112,7 @@ export async function PUT(request: NextRequest) {
 // DELETE - Delete expense
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = createAdminClient()
     const { searchParams } = new URL(request.url)
     const expense_id = searchParams.get('expense_id') || searchParams.get('id')
 

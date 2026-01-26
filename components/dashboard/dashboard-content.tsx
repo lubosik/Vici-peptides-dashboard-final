@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { DashboardKPIs } from '@/lib/metrics/queries'
 import { ExpenseSummary } from '@/lib/queries/expenses'
 import { RevenueChart } from '@/components/charts/revenue-chart'
-import { ProductsChart } from '@/components/charts/products-chart'
 import { NetProfitChart } from '@/components/charts/net-profit-chart'
 import { ExpensesChart } from '@/components/charts/expenses-chart'
 import { formatCurrency, formatPercent } from '@/lib/metrics/calculations'
@@ -12,7 +11,7 @@ import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
 
 interface DashboardContentProps {
   kpis: DashboardKPIs
-  revenueData: Array<{ date: string; revenue: number; profit: number }>
+  revenueData: Array<{ date: string; revenue: number; profit: number; orders: number }>
   topProducts: Array<{ productId: number; productName: string; revenue: number; qtySold: number; profit: number }>
   netProfitData: Array<{ date: string; revenue: number; expenses: number; netProfit: number }>
   expenseSummary: ExpenseSummary
@@ -170,11 +169,41 @@ export function DashboardContent({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
-            <CardTitle>Top Products</CardTitle>
-            <CardDescription>By revenue</CardDescription>
+            <CardTitle>Top 5 Products</CardTitle>
+            <CardDescription>Best selling products by revenue</CardDescription>
           </CardHeader>
           <CardContent>
-            <ProductsChart data={topProducts} />
+            {topProducts.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No products found
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {topProducts.slice(0, 5).map((product, index) => (
+                  <div key={product.productId} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <div className="font-medium">{product.productName}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {product.qtySold} sold
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-medium text-green-600">
+                        {formatCurrency(product.revenue)}
+                      </div>
+                      <div className={`text-sm ${product.profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        Profit: {formatCurrency(product.profit)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 

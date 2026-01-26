@@ -381,6 +381,59 @@ export class WooCommerceSync {
           }
 
           synced++
+
+          // Sync shipping cost from Shippo (if configured)
+          // This runs asynchronously after order is saved, so it doesn't block the sync
+          try {
+            const shippoApiToken = process.env.SHIPPO_API_TOKEN
+            if (shippoApiToken && order.woo_order_id) {
+              // Check if Shippo address is configured
+              const hasShippoAddress = 
+                process.env.SHIPPO_ADDRESS_FROM_STREET1 &&
+                process.env.SHIPPO_ADDRESS_FROM_CITY &&
+                process.env.SHIPPO_ADDRESS_FROM_STATE &&
+                process.env.SHIPPO_ADDRESS_FROM_ZIP
+
+              if (hasShippoAddress) {
+                // Import and sync shipping cost (don't await - run in background)
+                Promise.resolve().then(async () => {
+                  try {
+                    const { createShippoClient } = await import('@/lib/shippo/client')
+                    const { syncShippingCostForOrder } = await import('@/lib/shippo/sync-shipping-cost')
+                    
+                    const shippoClient = createShippoClient()
+                    const storeUrl = process.env.WOOCOMMERCE_STORE_URL
+                    const consumerKey = process.env.WOOCOMMERCE_CONSUMER_KEY
+                    const consumerSecret = process.env.WOOCOMMERCE_CONSUMER_SECRET
+
+                    if (storeUrl && consumerKey && consumerSecret) {
+                      await syncShippingCostForOrder({
+                        orderId: order.woo_order_id,
+                        orderNumber: order.order_number,
+                        supabase: this.supabase,
+                        shippoClient,
+                        wooCommerceConfig: {
+                          storeUrl,
+                          consumerKey,
+                          consumerSecret,
+                        },
+                        forceResync: false,
+                      })
+                      console.log(`✅ Synced shipping cost for order ${order.order_number}`)
+                    }
+                  } catch (shippingError) {
+                    // Log but don't fail the order sync if shipping sync fails
+                    console.warn(`⚠️  Failed to sync shipping cost for order ${order.order_number}:`, shippingError)
+                  }
+                }).catch(() => {
+                  // Silently handle any promise rejection
+                })
+              }
+            }
+          } catch (shippingError) {
+            // Log but don't fail the order sync if shipping sync fails
+            console.warn(`⚠️  Error setting up shipping cost sync for order ${order.order_number}:`, shippingError)
+          }
         } catch (error) {
           console.error(`❌ Error processing order ${wooOrder.id}:`, error)
           errors++

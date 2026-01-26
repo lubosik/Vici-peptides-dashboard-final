@@ -24,11 +24,11 @@ import {
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Chart', href: '/analytics', icon: BarChart3 },
-  { name: 'Apps', href: '/products', icon: Star },
-  { name: 'Forum', href: '/orders', icon: MessageSquare },
-  { name: 'Email', href: '/expenses', icon: Mail },
-  { name: 'Setting', href: '/settings', icon: Settings },
+  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
+  { name: 'Products', href: '/products', icon: Star },
+  { name: 'Orders', href: '/orders', icon: MessageSquare },
+  { name: 'Expenses', href: '/expenses', icon: Mail },
+  { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
 const projects = [
@@ -55,9 +55,9 @@ export function Sidebar() {
   const NavContent = ({ onNavigate }: { onNavigate?: () => void }) => (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center gap-3 px-6 py-4 border-b border-border/30">
+      <div className="flex items-center gap-3 px-6 py-4 border-b border-border">
         <Menu className="h-5 w-5 text-foreground" />
-        <span className="text-xl font-semibold neon-text-cyan">Dashboard</span>
+        <span className="text-xl font-semibold text-foreground">Vici Peptides</span>
       </div>
 
       {/* Main Navigation */}
@@ -79,7 +79,7 @@ export function Sidebar() {
               <div className="flex items-center gap-3">
                 <item.icon className={cn(
                   'h-5 w-5',
-                  isActive ? 'text-accent' : 'text-muted-foreground group-hover:text-foreground'
+                  isActive ? 'text-primary-foreground' : 'text-muted-foreground group-hover:text-foreground'
                 )} />
                 <span>{item.name}</span>
               </div>
@@ -92,22 +92,6 @@ export function Sidebar() {
       {/* Separator */}
       <div className="border-t border-border/30 mx-3" />
 
-      {/* Projects Section */}
-      <div className="px-6 py-4">
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-          PROJECTS
-        </h3>
-        <div className="space-y-1">
-          {projects.map((project) => (
-            <div
-              key={project.name}
-              className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground cursor-pointer transition-colors rounded-lg hover:bg-muted/30"
-            >
-              {project.name}
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   )
 
@@ -146,7 +130,7 @@ export function Sidebar() {
 
   // Desktop: Traditional sidebar
   return (
-    <div className="hidden lg:flex h-screen w-64 flex-col border-r border-border/30 bg-[rgb(20,15,35)]">
+    <div className="hidden lg:flex h-screen w-64 flex-col border-r border-border bg-background">
       <NavContent />
     </div>
   )

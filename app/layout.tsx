@@ -7,8 +7,8 @@ import { ThemeProvider } from '@/components/theme/theme-provider'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'NeonMetrics Dashboard',
-  description: 'Analytics dashboard demo',
+  title: 'Vici Peptides Dashboard',
+  description: 'Vici Peptides analytics dashboard',
 }
 
 export default function RootLayout({
@@ -21,15 +21,11 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="light"
           enableSystem={false}
           disableTransitionOnChange
         >
-          {process.env.NEXT_PUBLIC_DEMO_MODE !== 'false' ? (
-            children
-          ) : (
-            <RealtimeProvider>{children}</RealtimeProvider>
-          )}
+          <RealtimeProvider>{children}</RealtimeProvider>
         </ThemeProvider>
       </body>
     </html>

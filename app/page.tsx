@@ -1,20 +1,43 @@
-'use client'
-
 import { Sidebar } from '@/components/sidebar'
 import { Header } from '@/components/header'
-import { NeonDashboard } from '@/components/dashboard/neon-dashboard'
-import { useEffect } from 'react'
-import { useDemoStore } from '@/lib/demo/store'
+import { DashboardContent } from '@/components/dashboard/dashboard-content'
+import { DashboardClient } from '@/components/dashboard/dashboard-client'
+import { createClient } from '@/lib/supabase/server'
+import { getDashboardKPIs } from '@/lib/metrics/queries'
+import { getRevenueOverTime } from '@/lib/metrics/queries'
+import { getTopProducts } from '@/lib/metrics/queries'
+import { getNetProfitOverTime } from '@/lib/metrics/net-profit'
+import { getExpenseSummary } from '@/lib/queries/expenses'
 
-export default function DashboardPage() {
-  const store = useDemoStore()
+export const dynamic = 'force-dynamic'
 
-  // Initialize demo data on mount if empty
-  useEffect(() => {
-    if (store.orders.length === 0 && store.products.length === 0) {
-      store.resetData()
-    }
-  }, [store])
+export default async function DashboardPage() {
+  const supabase = await createClient()
+
+  // Fetch all dashboard data in parallel
+  const [kpis, revenueDataRaw, topProductsRaw, netProfitData, expenseSummary] = await Promise.all([
+    getDashboardKPIs(supabase, 'all'),
+    getRevenueOverTime(supabase, 30),
+    getTopProducts(supabase, 5),
+    getNetProfitOverTime(supabase, 30),
+    getExpenseSummary(supabase),
+  ])
+
+  // Transform revenue data to match component expectations
+  const revenueData = revenueDataRaw.map(d => ({
+    date: d.date,
+    revenue: d.revenue,
+    profit: d.profit,
+  }))
+
+  // Transform top products to match component expectations
+  const topProducts = topProductsRaw.map(p => ({
+    productId: p.productId,
+    productName: p.productName,
+    revenue: p.revenue,
+    qtySold: p.qtySold,
+    profit: p.profit,
+  }))
 
   return (
     <div className="flex min-h-screen">
@@ -22,9 +45,17 @@ export default function DashboardPage() {
       <div className="flex-1 flex flex-col">
         <Header />
         <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto p-6 lg:p-8">
-            <NeonDashboard />
-          </div>
+          <DashboardClient>
+            <div className="container mx-auto p-6 lg:p-8">
+              <DashboardContent
+                kpis={kpis}
+                revenueData={revenueData}
+                topProducts={topProducts}
+                netProfitData={netProfitData}
+                expenseSummary={expenseSummary}
+              />
+            </div>
+          </DashboardClient>
         </main>
       </div>
     </div>

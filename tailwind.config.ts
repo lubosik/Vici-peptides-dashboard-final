@@ -39,14 +39,6 @@ const config: Config = {
           DEFAULT: 'rgb(var(--destructive) / <alpha-value>)',
           foreground: 'rgb(var(--destructive-foreground) / <alpha-value>)',
         },
-        // Neon accent colors
-        neon: {
-          cyan: 'rgb(120, 200, 255)',
-          pink: 'rgb(255, 100, 200)',
-          green: 'rgb(100, 255, 150)',
-          orange: 'rgb(255, 150, 100)',
-          purple: 'rgb(150, 100, 255)',
-        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -57,11 +49,10 @@ const config: Config = {
         sm: 'calc(var(--radius) - 4px)',
       },
       boxShadow: {
-        'neon-cyan': '0 0 10px rgba(120, 200, 255, 0.4), 0 0 20px rgba(120, 200, 255, 0.3), 0 0 30px rgba(120, 200, 255, 0.2)',
-        'neon-pink': '0 0 10px rgba(255, 100, 200, 0.4), 0 0 20px rgba(255, 100, 200, 0.3), 0 0 30px rgba(255, 100, 200, 0.2)',
-        'neon-green': '0 0 10px rgba(100, 255, 150, 0.4), 0 0 20px rgba(100, 255, 150, 0.3), 0 0 30px rgba(100, 255, 150, 0.2)',
-        'neon-orange': '0 0 10px rgba(255, 150, 100, 0.4), 0 0 20px rgba(255, 150, 100, 0.3), 0 0 30px rgba(255, 150, 100, 0.2)',
-        'glass': '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+        'sm': '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+        'DEFAULT': '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+        'md': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+        'lg': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
       },
     },
   },

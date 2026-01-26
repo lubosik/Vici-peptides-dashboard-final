@@ -6,8 +6,9 @@ const nextConfig = {
     domains: [],
     formats: ['image/avif', 'image/webp'],
   },
-  // Ensure proper output for Vercel
-  output: 'standalone',
+  // Output mode: 'standalone' for Vercel, remove for Hostinger
+  // Hostinger works better without standalone output
+  // output: 'standalone', // Commented out for Hostinger compatibility
 }
 
 module.exports = nextConfig

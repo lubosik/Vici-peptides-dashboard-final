@@ -1,5 +1,3 @@
-'use client'
-
 import { Sidebar } from '@/components/sidebar'
 import { Header } from '@/components/header'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -7,59 +5,75 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
+import { createClient } from '@/lib/supabase/server'
+import { getOrders, getOrderStatuses } from '@/lib/queries/orders'
 import { formatCurrency, formatPercent } from '@/lib/metrics/calculations'
 import Link from 'next/link'
 import { Search, Download, ChevronLeft, ChevronRight } from 'lucide-react'
-import { useDemoOrders, useDemoOrderStatuses } from '@/lib/demo/hooks'
-import { useSearchParams, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import { useDemoStore } from '@/lib/demo/store'
 
-export default function OrdersPage() {
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const store = useDemoStore()
+// Force dynamic rendering to ensure real-time data from Supabase
+export const dynamic = 'force-dynamic'
+
+interface OrdersPageProps {
+  searchParams: {
+    page?: string
+    status?: string
+    search?: string
+    dateFrom?: string
+    dateTo?: string
+    sortBy?: string
+    sortOrder?: 'asc' | 'desc'
+  }
+}
+
+export default async function OrdersPage({ searchParams }: OrdersPageProps) {
+  const supabase = await createClient()
   
-  const [initialized, setInitialized] = useState(false)
-
-  useEffect(() => {
-    if (store.orders.length === 0 && store.products.length === 0) {
-      store.resetData()
-    }
-    setInitialized(true)
-  }, [store])
-
-  const page = parseInt(searchParams.get('page') || '1')
+  const page = parseInt(searchParams.page || '1')
   const filters = {
-    status: searchParams.get('status') || undefined,
-    search: searchParams.get('search') || undefined,
-    dateFrom: searchParams.get('dateFrom') || undefined,
-    dateTo: searchParams.get('dateTo') || undefined,
+    status: searchParams.status,
+    search: searchParams.search,
+    dateFrom: searchParams.dateFrom,
+    dateTo: searchParams.dateTo,
   }
-  const sortBy = searchParams.get('sortBy') || 'order_date'
-  const sortOrder = (searchParams.get('sortOrder') || 'desc') as 'asc' | 'desc'
+  const sortBy = searchParams.sortBy || 'order_date'
+  const sortOrder = searchParams.sortOrder || 'desc'
 
-  const ordersData = useDemoOrders(filters, page, 20, sortBy, sortOrder)
-  const statuses = useDemoOrderStatuses()
+  let ordersData: any = {
+    orders: [],
+    total: 0,
+    page: 1,
+    pageSize: 20,
+    totalPages: 0,
+  }
+  let statuses: string[] = []
+  let hasError = false
+  let errorMessage = ''
 
-  if (!initialized) {
-    return (
-      <div className="flex min-h-screen">
-        <Sidebar />
-        <div className="flex-1 flex flex-col">
-          <Header />
-          <main className="flex-1 overflow-y-auto">
-            <div className="container mx-auto p-6 lg:p-8">
-              <div className="text-center py-12">Loading...</div>
-            </div>
-          </main>
-        </div>
-      </div>
-    )
+  try {
+    // Fetch real orders from Supabase
+    ordersData = await getOrders(supabase, filters, page, 20, sortBy, sortOrder)
+    statuses = await getOrderStatuses(supabase)
+  } catch (error) {
+    console.error('Error fetching orders:', error)
+    hasError = true
+    errorMessage = error instanceof Error ? error.message : 'Failed to load orders'
   }
 
-  const updateSearchParams = (updates: Record<string, string | null>) => {
-    const params = new URLSearchParams(searchParams.toString())
+  // Build URL with current params for navigation
+  const buildUrl = (updates: Record<string, string | null>) => {
+    const params = new URLSearchParams()
+    
+    // Keep existing params
+    if (searchParams.page && !updates.page) params.set('page', searchParams.page)
+    if (searchParams.status && !updates.status) params.set('status', searchParams.status)
+    if (searchParams.search && !updates.search) params.set('search', searchParams.search)
+    if (searchParams.dateFrom && !updates.dateFrom) params.set('dateFrom', searchParams.dateFrom)
+    if (searchParams.dateTo && !updates.dateTo) params.set('dateTo', searchParams.dateTo)
+    if (searchParams.sortBy && !updates.sortBy) params.set('sortBy', searchParams.sortBy)
+    if (searchParams.sortOrder && !updates.sortOrder) params.set('sortOrder', searchParams.sortOrder)
+    
+    // Apply updates
     Object.entries(updates).forEach(([key, value]) => {
       if (value) {
         params.set(key, value)
@@ -67,7 +81,8 @@ export default function OrdersPage() {
         params.delete(key)
       }
     })
-    router.push(`/orders?${params.toString()}`)
+    
+    return `/orders?${params.toString()}`
   }
 
   return (
@@ -81,10 +96,18 @@ export default function OrdersPage() {
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Orders</h1>
                 <p className="text-sm sm:text-base text-muted-foreground mt-2">
-                  Manage and view all orders
+                  Manage and view all orders from WooCommerce
                 </p>
               </div>
             </div>
+
+            {hasError && (
+              <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                  ⚠️ Error loading orders: {errorMessage}
+                </p>
+              </div>
+            )}
 
             {/* Filters */}
             <Card className="mb-6">
@@ -93,25 +116,18 @@ export default function OrdersPage() {
                 <CardDescription>Filter orders by status, date, or search</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4 md:grid-cols-4">
+                <form method="get" className="grid gap-4 md:grid-cols-4">
                   <div>
                     <label className="text-sm font-medium mb-2 block">Search</label>
                     <Input
+                      name="search"
                       placeholder="Order #, customer, email..."
                       defaultValue={filters.search}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          updateSearchParams({ search: e.currentTarget.value || null })
-                        }
-                      }}
                     />
                   </div>
                   <div>
                     <label className="text-sm font-medium mb-2 block">Status</label>
-                    <Select
-                      defaultValue={filters.status || ''}
-                      onChange={(e) => updateSearchParams({ status: e.target.value || null })}
-                    >
+                    <Select name="status" defaultValue={filters.status || ''}>
                       <option value="">All Statuses</option>
                       {statuses.map((status) => (
                         <option key={status} value={status}>
@@ -124,19 +140,25 @@ export default function OrdersPage() {
                     <label className="text-sm font-medium mb-2 block">Date From</label>
                     <Input
                       type="date"
+                      name="dateFrom"
                       defaultValue={filters.dateFrom}
-                      onChange={(e) => updateSearchParams({ dateFrom: e.target.value || null })}
                     />
                   </div>
                   <div>
                     <label className="text-sm font-medium mb-2 block">Date To</label>
                     <Input
                       type="date"
+                      name="dateTo"
                       defaultValue={filters.dateTo}
-                      onChange={(e) => updateSearchParams({ dateTo: e.target.value || null })}
                     />
                   </div>
-                </div>
+                  <div className="md:col-span-4 flex gap-2">
+                    <Button type="submit">Apply Filters</Button>
+                    <Button type="button" variant="outline" asChild>
+                      <Link href="/orders">Clear</Link>
+                    </Button>
+                  </div>
+                </form>
               </CardContent>
             </Card>
 
@@ -144,11 +166,12 @@ export default function OrdersPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Orders ({ordersData.total})</CardTitle>
+                <CardDescription>Real-time orders from WooCommerce</CardDescription>
               </CardHeader>
               <CardContent>
                 {ordersData.orders.length === 0 ? (
                   <div className="text-center py-12 text-muted-foreground">
-                    No orders found.
+                    {hasError ? 'Error loading orders. Please try again.' : 'No orders found.'}
                   </div>
                 ) : (
                   <>
@@ -167,7 +190,7 @@ export default function OrdersPage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {ordersData.orders.map((order) => (
+                        {ordersData.orders.map((order: any) => (
                           <TableRow key={order.order_number}>
                             <TableCell className="font-medium">
                               <Link
@@ -178,13 +201,15 @@ export default function OrdersPage() {
                               </Link>
                             </TableCell>
                             <TableCell>
-                              {new Date(order.order_date).toLocaleDateString()}
+                              {order.order_date 
+                                ? new Date(order.order_date).toLocaleDateString()
+                                : 'N/A'}
                             </TableCell>
                             <TableCell>
                               <div>
-                                <div className="font-medium">{order.customer_name}</div>
+                                <div className="font-medium">{order.customer_name || 'N/A'}</div>
                                 <div className="text-sm text-muted-foreground">
-                                  {order.customer_email}
+                                  {order.customer_email || ''}
                                 </div>
                               </div>
                             </TableCell>
@@ -201,14 +226,14 @@ export default function OrdersPage() {
                             <TableCell className="text-right font-medium">
                               {formatCurrency(order.order_total)}
                             </TableCell>
-                            <TableCell className="text-right">
+                            <TableCell className={`text-right ${order.order_profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                               {formatCurrency(order.order_profit)}
                             </TableCell>
                             <TableCell className="text-right">
                               {formatPercent(order.profit_margin)}
                             </TableCell>
                             <TableCell className="text-right">
-                              {order.line_items_count}
+                              {order.line_items_count || 0}
                             </TableCell>
                             <TableCell>
                               <Button variant="ghost" size="sm" asChild>
@@ -230,15 +255,19 @@ export default function OrdersPage() {
                         </div>
                         <div className="flex gap-2">
                           {page > 1 && (
-                            <Button variant="outline" size="sm" onClick={() => updateSearchParams({ page: String(page - 1) })}>
-                              <ChevronLeft className="h-4 w-4 mr-1" />
-                              Previous
+                            <Button variant="outline" size="sm" asChild>
+                              <Link href={buildUrl({ page: String(page - 1) })}>
+                                <ChevronLeft className="h-4 w-4 mr-1" />
+                                Previous
+                              </Link>
                             </Button>
                           )}
                           {page < ordersData.totalPages && (
-                            <Button variant="outline" size="sm" onClick={() => updateSearchParams({ page: String(page + 1) })}>
-                              Next
-                              <ChevronRight className="h-4 w-4 ml-1" />
+                            <Button variant="outline" size="sm" asChild>
+                              <Link href={buildUrl({ page: String(page + 1) })}>
+                                Next
+                                <ChevronRight className="h-4 w-4 ml-1" />
+                              </Link>
                             </Button>
                           )}
                         </div>

@@ -9,6 +9,7 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  Cell,
 } from 'recharts'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -69,16 +70,19 @@ export function ProductsChart({ data }: ProductsChartProps) {
             <Legend />
             <Bar
               dataKey="revenue"
-              fill="hsl(var(--primary))"
+              fill="#22c55e"
               name="Revenue"
               radius={[4, 4, 0, 0]}
             />
             <Bar
               dataKey="profit"
-              fill="hsl(var(--accent))"
               name="Profit"
               radius={[4, 4, 0, 0]}
-            />
+            >
+              {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.profitColor} />
+              ))}
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </CardContent>

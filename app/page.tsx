@@ -28,6 +28,7 @@ export default async function DashboardPage() {
     date: d.date,
     revenue: d.revenue,
     profit: d.profit,
+    orders: d.orders || 0, // Add orders property (default to 0 if not present)
   }))
 
   // Transform top products to match component expectations

@@ -101,6 +101,13 @@ export class WooCommerceClient {
   }
 
   /**
+   * Get a single order by ID
+   */
+  async getOrder(orderId: number): Promise<any> {
+    return this.request(`orders/${orderId}`)
+  }
+
+  /**
    * Fetch all orders with pagination
    */
   async fetchOrders(options: {

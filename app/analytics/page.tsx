@@ -141,7 +141,21 @@ export default async function AnalyticsPage() {
 
           {/* Top Products and Expenses */}
           <div className="grid gap-6 md:grid-cols-2 mb-6">
-            <ProductsChart data={topProducts} />
+            {topProducts.length > 0 ? (
+              <ProductsChart data={topProducts} />
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Top Products</CardTitle>
+                  <CardDescription>Best selling products by quantity sold</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8 text-muted-foreground">
+                    No products found. Products will appear here once orders are placed.
+                  </div>
+                </CardContent>
+              </Card>
+            )}
             <ExpensesChart data={expenseSummary.expensesByCategory} />
           </div>
 

@@ -49,7 +49,7 @@ export function ProductsChart({ data }: ProductsChartProps) {
     <Card>
       <CardHeader>
         <CardTitle>Top Products</CardTitle>
-        <CardDescription>Best selling products by revenue</CardDescription>
+        <CardDescription>Best selling products by quantity sold (aggregated across all strengths)</CardDescription>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>

@@ -1,15 +1,28 @@
 'use client'
 
-import { Search, LogOut } from 'lucide-react'
+import { Search, LogOut, Package, ShoppingCart, DollarSign } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useDebounce } from '@/hooks/use-debounce'
+
+interface SearchResult {
+  type: 'order' | 'product' | 'expense'
+  id: string | number
+  title: string
+  subtitle: string
+  url: string
+}
 
 export function Header() {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([])
+  const [showResults, setShowResults] = useState(false)
+  const [isSearching, setIsSearching] = useState(false)
+  const searchRef = useRef<HTMLDivElement>(null)
+  const debouncedQuery = useDebounce(searchQuery, 300)
 
   const handleSearch = useCallback((query: string) => {
     if (!query.trim()) return
@@ -68,18 +81,46 @@ export function Header() {
     <div className="h-16 border-b border-border bg-background flex items-center justify-between px-6">
       {/* Search Bar - Centered */}
       <div className="flex-1 flex justify-center">
-        <div className="relative w-full max-w-md">
+        <div ref={searchRef} className="relative w-full max-w-md">
           <Input
             type="text"
             placeholder="Search orders, products, expenses..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={handleKeyDown}
+            onFocus={() => {
+              if (searchResults.length > 0) setShowResults(true)
+            }}
             className="w-full pl-4 pr-12 py-2 rounded-md bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
           />
           <div className="absolute right-2 top-1/2 -translate-y-1/2 bg-primary/20 p-2 rounded-lg">
-            <Search className="h-4 w-4 text-primary" />
+            {isSearching ? (
+              <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Search className="h-4 w-4 text-primary" />
+            )}
           </div>
+          
+          {/* Search Results Dropdown */}
+          {showResults && searchResults.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+              {searchResults.map((result, index) => (
+                <button
+                  key={`${result.type}-${result.id}-${index}`}
+                  onClick={() => handleResultClick(result.url)}
+                  className="w-full text-left px-4 py-3 hover:bg-muted flex items-center gap-3 transition-colors"
+                >
+                  <div className="text-muted-foreground">
+                    {getResultIcon(result.type)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">{result.title}</div>
+                    <div className="text-sm text-muted-foreground truncate">{result.subtitle}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
       {/* Logout Button */}

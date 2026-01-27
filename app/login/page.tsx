@@ -32,7 +32,9 @@ export default function LoginPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        setError(data.error || 'Invalid credentials')
+        // Show more detailed error message
+        const errorMsg = data.error || `Login failed (${response.status})`
+        setError(errorMsg)
         setLoading(false)
         return
       }

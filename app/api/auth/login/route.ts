@@ -33,19 +33,43 @@ export async function POST(request: NextRequest) {
     const trimmedAuthUser = authUser.trim()
     const trimmedAuthPass = authPass.trim()
 
-    // Debug logging (remove in production if needed)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Login attempt:', {
-        providedUsername: trimmedUsername,
-        providedPasswordLength: trimmedPassword.length,
-        expectedUsername: trimmedAuthUser,
-        expectedPasswordLength: trimmedAuthPass.length,
-        usernameMatch: trimmedUsername === trimmedAuthUser,
-        passwordMatch: trimmedPassword === trimmedAuthPass,
+    // Debug logging for troubleshooting
+    console.log('Login attempt:', {
+      providedUsername: trimmedUsername,
+      providedPasswordLength: trimmedPassword.length,
+      expectedUsername: trimmedAuthUser,
+      expectedPasswordLength: trimmedAuthPass.length,
+      usernameMatch: trimmedUsername === trimmedAuthUser,
+      passwordMatch: trimmedPassword === trimmedAuthPass,
+      // Show first/last chars for debugging (safe)
+      userFirstChar: trimmedUsername[0],
+      userLastChar: trimmedUsername[trimmedUsername.length - 1],
+      expectedUserFirstChar: trimmedAuthUser[0],
+      expectedUserLastChar: trimmedAuthUser[trimmedAuthUser.length - 1],
+    })
+
+    // Detailed comparison
+    if (trimmedUsername !== trimmedAuthUser) {
+      console.error('Username mismatch:', {
+        provided: JSON.stringify(trimmedUsername),
+        expected: JSON.stringify(trimmedAuthUser),
+        providedLength: trimmedUsername.length,
+        expectedLength: trimmedAuthUser.length,
       })
+      return NextResponse.json(
+        { error: 'Invalid username or password' },
+        { status: 401 }
+      )
     }
 
-    if (trimmedUsername !== trimmedAuthUser || trimmedPassword !== trimmedAuthPass) {
+    if (trimmedPassword !== trimmedAuthPass) {
+      console.error('Password mismatch:', {
+        providedLength: trimmedPassword.length,
+        expectedLength: trimmedAuthPass.length,
+        // Show first few chars for debugging
+        providedStart: trimmedPassword.substring(0, 3),
+        expectedStart: trimmedAuthPass.substring(0, 3),
+      })
       return NextResponse.json(
         { error: 'Invalid username or password' },
         { status: 401 }

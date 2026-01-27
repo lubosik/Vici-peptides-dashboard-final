@@ -141,7 +141,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
       <div className="flex min-h-screen bg-background">
         <Sidebar />
         <main className="flex-1 overflow-y-auto lg:ml-0">
-          <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+          <div className="container mx-auto p-3 sm:p-4 lg:p-6 xl:p-8">
             {/* Header */}
             <div className="mb-6">
               <Button variant="ghost" asChild className="mb-4">

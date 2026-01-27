@@ -118,10 +118,10 @@ export default async function AnalyticsPage() {
     <div className="flex min-h-screen bg-background">
       <Sidebar />
       <main className="flex-1 overflow-y-auto lg:ml-0">
-        <div className="container mx-auto p-4 sm:p-6 lg:p-8">
-          <div className="mb-8">
+        <div className="container mx-auto p-3 sm:p-4 lg:p-6 xl:p-8">
+          <div className="mb-4 sm:mb-6 lg:mb-8 pt-2 sm:pt-0">
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Analytics</h1>
-            <p className="text-muted-foreground mt-2">
+            <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
               Comprehensive analytics and insights
             </p>
             {hasError && (
@@ -140,7 +140,7 @@ export default async function AnalyticsPage() {
           </div>
 
           {/* Top Products and Expenses */}
-          <div className="grid gap-6 md:grid-cols-2 mb-6">
+          <div className="grid gap-3 sm:gap-4 lg:gap-6 md:grid-cols-2 mb-4 sm:mb-6">
             {topProducts.length > 0 ? (
               <ProductsChart data={topProducts} />
             ) : (

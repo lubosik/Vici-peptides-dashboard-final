@@ -91,8 +91,8 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
       <div className="flex-1 flex flex-col">
         <Header />
         <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto p-4 sm:p-6 lg:p-8">
-            <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="container mx-auto p-3 sm:p-4 lg:p-6 xl:p-8">
+            <div className="mb-4 sm:mb-6 lg:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 pt-2 sm:pt-0">
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Orders</h1>
                 <p className="text-sm sm:text-base text-muted-foreground mt-2">

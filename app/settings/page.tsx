@@ -59,7 +59,7 @@ export default function SettingsPage() {
       <div className="flex-1 flex flex-col">
         <Header />
         <main className="flex-1 overflow-y-auto">
-          <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+          <div className="container mx-auto p-3 sm:p-4 lg:p-6 xl:p-8">
             <div className="mb-6 sm:mb-8">
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Settings</h1>
               <p className="text-sm sm:text-base text-muted-foreground mt-2">

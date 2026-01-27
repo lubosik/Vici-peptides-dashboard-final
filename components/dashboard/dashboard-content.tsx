@@ -33,15 +33,15 @@ export function DashboardContent({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 px-3 sm:px-0">
       {/* Page Title */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Overview of your business metrics</p>
+      <div className="pt-2 sm:pt-0">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>
+        <p className="text-sm sm:text-base text-muted-foreground mt-1">Overview of your business metrics</p>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Total Revenue */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -143,7 +143,7 @@ export function DashboardContent({
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
         <Card>
           <CardHeader>
             <CardTitle>Revenue & Profit Over Time</CardTitle>
@@ -166,7 +166,7 @@ export function DashboardContent({
       </div>
 
       {/* Top Products & Expenses Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
         <Card>
           <CardHeader>
             <CardTitle>Top 5 Products</CardTitle>

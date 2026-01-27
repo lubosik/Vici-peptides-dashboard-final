@@ -72,7 +72,7 @@ export function Sidebar() {
               className={cn(
                 'flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-colors relative group',
                 isActive
-                  ? 'bg-accent/20 text-accent neon-glow-green'
+                  ? 'bg-accent text-accent-foreground'
                   : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
               )}
             >
@@ -100,30 +100,26 @@ export function Sidebar() {
     return (
       <>
         {/* Mobile Header with Hamburger */}
-        <div className="lg:hidden fixed top-0 left-0 right-0 z-50 h-16 border-b border-border/30 glass-card flex items-center px-4">
+        <div className="lg:hidden fixed top-0 left-0 right-0 z-50 h-14 border-b border-border bg-background flex items-center px-3 sm:px-4">
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="lg:hidden">
-                <Menu className="h-6 w-6" />
+              <Button variant="ghost" size="icon" className="lg:hidden h-10 w-10">
+                <Menu className="h-5 w-5" />
                 <span className="sr-only">Open menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-64 p-0 glass-card border-r border-border/30">
-              <SheetHeader className="border-b border-border/30 px-6 py-4">
-                <SheetTitle className="flex items-center gap-3">
-                  <Menu className="h-5 w-5" />
-                  <span className="text-xl font-semibold neon-text-cyan">Dashboard</span>
+            <SheetContent side="left" className="w-[280px] sm:w-80 p-0 bg-background border-r border-border">
+              <SheetHeader className="border-b border-border px-4 sm:px-6 py-3 sm:py-4">
+                <SheetTitle className="flex items-center gap-2 sm:gap-3">
+                  <span className="text-lg sm:text-xl font-semibold text-foreground">Vici Peptides</span>
                 </SheetTitle>
               </SheetHeader>
               <NavContent onNavigate={() => setIsOpen(false)} />
             </SheetContent>
           </Sheet>
-          <div className="flex-1 flex items-center justify-center">
-            <span className="text-lg font-semibold neon-text-cyan">NeonMetrics</span>
-          </div>
         </div>
         {/* Spacer for mobile header */}
-        <div className="lg:hidden h-16" />
+        <div className="lg:hidden h-14" />
       </>
     )
   }

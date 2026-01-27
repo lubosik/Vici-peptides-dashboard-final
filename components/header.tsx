@@ -59,9 +59,62 @@ export function Header() {
   //   }
   // }, [debouncedSearch, handleSearch])
 
+  // Fetch search previews
+  useEffect(() => {
+    if (debouncedQuery && debouncedQuery.length >= 2) {
+      setIsSearching(true)
+      fetch(`/api/search?q=${encodeURIComponent(debouncedQuery)}`)
+        .then(res => res.json())
+        .then(data => {
+          setSearchResults(data.results || [])
+          setShowResults(true)
+          setIsSearching(false)
+        })
+        .catch(() => {
+          setIsSearching(false)
+        })
+    } else {
+      setSearchResults([])
+      setShowResults(false)
+    }
+  }, [debouncedQuery])
+
+  // Close results when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowResults(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleSearch(searchQuery)
+      setShowResults(false)
+    } else if (e.key === 'Escape') {
+      setShowResults(false)
+    }
+  }
+
+  const handleResultClick = (url: string) => {
+    router.push(url)
+    setShowResults(false)
+    setSearchQuery('')
+  }
+
+  const getResultIcon = (type: string) => {
+    switch (type) {
+      case 'order':
+        return <ShoppingCart className="h-4 w-4" />
+      case 'product':
+        return <Package className="h-4 w-4" />
+      case 'expense':
+        return <DollarSign className="h-4 w-4" />
+      default:
+        return <Search className="h-4 w-4" />
     }
   }
 
@@ -78,10 +131,10 @@ export function Header() {
   }
 
   return (
-    <div className="h-16 border-b border-border bg-background flex items-center justify-between px-6">
+    <div className="h-14 sm:h-16 border-b border-border bg-background flex items-center justify-between px-3 sm:px-4 lg:px-6">
       {/* Search Bar - Centered */}
-      <div className="flex-1 flex justify-center">
-        <div ref={searchRef} className="relative w-full max-w-md">
+      <div className="flex-1 flex justify-center max-w-2xl mx-auto">
+        <div ref={searchRef} className="relative w-full">
           <Input
             type="text"
             placeholder="Search orders, products, expenses..."
@@ -91,24 +144,24 @@ export function Header() {
             onFocus={() => {
               if (searchResults.length > 0) setShowResults(true)
             }}
-            className="w-full pl-4 pr-12 py-2 rounded-md bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
+            className="w-full pl-3 sm:pl-4 pr-10 sm:pr-12 py-1.5 sm:py-2 text-sm sm:text-base rounded-md bg-input border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20"
           />
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 bg-primary/20 p-2 rounded-lg">
+          <div className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 p-1.5 sm:p-2">
             {isSearching ? (
-              <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <div className="h-3.5 w-3.5 sm:h-4 sm:w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
             ) : (
-              <Search className="h-4 w-4 text-primary" />
+              <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
             )}
           </div>
           
           {/* Search Results Dropdown */}
           {showResults && searchResults.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+            <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg z-50 max-h-[60vh] sm:max-h-96 overflow-y-auto">
               {searchResults.map((result, index) => (
                 <button
                   key={`${result.type}-${result.id}-${index}`}
                   onClick={() => handleResultClick(result.url)}
-                  className="w-full text-left px-4 py-3 hover:bg-muted flex items-center gap-3 transition-colors"
+                  className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 hover:bg-muted flex items-center gap-2 sm:gap-3 transition-colors text-sm sm:text-base"
                 >
                   <div className="text-muted-foreground">
                     {getResultIcon(result.type)}
@@ -124,15 +177,15 @@ export function Header() {
         </div>
       </div>
       {/* Logout Button */}
-      <div className="ml-4">
+      <div className="ml-2 sm:ml-4">
         <Button
           variant="ghost"
           size="sm"
           onClick={handleLogout}
-          className="flex items-center gap-2"
+          className="flex items-center gap-1 sm:gap-2 h-8 sm:h-9 px-2 sm:px-3"
         >
-          <LogOut className="h-4 w-4" />
-          <span className="hidden sm:inline">Logout</span>
+          <LogOut className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          <span className="hidden md:inline text-xs sm:text-sm">Logout</span>
         </Button>
       </div>
     </div>

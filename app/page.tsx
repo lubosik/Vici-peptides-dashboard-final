@@ -48,7 +48,7 @@ export default async function DashboardPage() {
         <Header />
         <main className="flex-1 overflow-y-auto">
           <DashboardClient>
-            <div className="container mx-auto p-6 lg:p-8">
+            <div className="container mx-auto p-3 sm:p-4 lg:p-6 xl:p-8">
               <DashboardContent
                 kpis={kpis}
                 revenueData={revenueData}

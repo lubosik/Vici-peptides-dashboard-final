@@ -9,8 +9,6 @@ import { getTopProducts } from '@/lib/metrics/queries'
 import { getNetProfitOverTime } from '@/lib/metrics/net-profit'
 import { getExpenseSummary } from '@/lib/queries/expenses'
 
-export const dynamic = 'force-dynamic'
-
 // Force dynamic rendering to ensure real-time data
 export const dynamic = 'force-dynamic'
 

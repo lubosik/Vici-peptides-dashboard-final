@@ -223,18 +223,20 @@ export async function getTopProducts(
     `)
     .not('orders.order_status', 'in', '("checkout-draft","cancelled","draft")')
 
-  if (linesError) throw linesError
-
-  // Get all products for names (exclude placeholder products)
+  // Get all products with qty_sold (exclude placeholder products)
   const placeholderIds = [203, 209, 212, 220, 221, 222]
   let productsQuery = supabase
     .from('products')
-    .select('product_id, product_name')
+    .select('product_id, product_name, qty_sold')
     .not('product_id', 'in', `(${placeholderIds.join(',')})`)
+    .gt('qty_sold', 0) // Only products with sales
 
   const { data: products, error: productsError } = await productsQuery
 
   if (productsError) throw productsError
+
+  // If no order lines, fall back to products table qty_sold
+  const useProductsTable = !orderLines || orderLines.length === 0
 
   // Helper function to extract base product name (remove strength variations)
   // Examples: "Retatrutide 10mg" -> "Retatrutide", "BPC-157 5mg" -> "BPC-157"
@@ -270,38 +272,82 @@ export async function getTopProducts(
     profit: number
   }>()
 
-  orderLines?.forEach((line) => {
-    const productId = line.product_id
-    const fullProductName = productNameMap.get(productId) || `Product ${productId}`
-    
-    // Skip BAC Water products (case-insensitive)
-    if (/bac\s*water/i.test(fullProductName)) {
-      return
-    }
+  if (useProductsTable && products) {
+    // Fallback: Use products table qty_sold directly
+    products.forEach((product) => {
+      const productName = (product.product_name || '').trim()
+      
+      // Skip BAC Water products (case-insensitive)
+      if (/bac\s*water/i.test(productName)) {
+        return
+      }
 
-    // Get base product name (without strength)
-    const baseName = getBaseProductName(fullProductName)
-    
-    // Skip if base name is empty or still looks like BAC Water
-    if (!baseName || /bac\s*water/i.test(baseName)) {
-      return
-    }
+      // Skip placeholder products
+      const isPlaceholder = /^Product\s+\d+$/i.test(productName)
+      if (isPlaceholder) {
+        return
+      }
 
-    const existing = baseProductMap.get(baseName) || {
-      productId, // Use first product ID found for this base name
-      productName: baseName, // Use cleaned base name
-      revenue: 0,
-      qtySold: 0,
-      profit: 0,
-    }
+      // Get base product name (without strength)
+      const baseName = getBaseProductName(productName)
+      
+      // Skip if base name is empty or still looks like BAC Water
+      if (!baseName || /bac\s*water/i.test(baseName)) {
+        return
+      }
 
-    baseProductMap.set(baseName, {
-      ...existing,
-      revenue: existing.revenue + (Number(line.line_total) || 0),
-      qtySold: existing.qtySold + (Number(line.qty_ordered) || 0),
-      profit: existing.profit + (Number(line.line_profit) || 0),
+      const qtySold = Number(product.qty_sold) || 0
+      if (qtySold <= 0) return
+
+      const existing = baseProductMap.get(baseName) || {
+        productId: product.product_id,
+        productName: baseName,
+        revenue: 0,
+        qtySold: 0,
+        profit: 0,
+      }
+
+      baseProductMap.set(baseName, {
+        ...existing,
+        qtySold: existing.qtySold + qtySold,
+        // Revenue and profit will be 0 if using products table fallback
+      })
     })
-  })
+  } else if (orderLines) {
+    // Use order_lines data (preferred method)
+    orderLines.forEach((line) => {
+      const productId = line.product_id
+      const fullProductName = productNameMap.get(productId) || `Product ${productId}`
+      
+      // Skip BAC Water products (case-insensitive)
+      if (/bac\s*water/i.test(fullProductName)) {
+        return
+      }
+
+      // Get base product name (without strength)
+      const baseName = getBaseProductName(fullProductName)
+      
+      // Skip if base name is empty or still looks like BAC Water
+      if (!baseName || /bac\s*water/i.test(baseName)) {
+        return
+      }
+
+      const existing = baseProductMap.get(baseName) || {
+        productId, // Use first product ID found for this base name
+        productName: baseName, // Use cleaned base name
+        revenue: 0,
+        qtySold: 0,
+        profit: 0,
+      }
+
+      baseProductMap.set(baseName, {
+        ...existing,
+        revenue: existing.revenue + (Number(line.line_total) || 0),
+        qtySold: existing.qtySold + (Number(line.qty_ordered) || 0),
+        profit: existing.profit + (Number(line.line_profit) || 0),
+      })
+    })
+  }
 
   // Convert to array, filter out products with no sales, sort by QTY sold (descending), and limit
   const topProducts = Array.from(baseProductMap.values())

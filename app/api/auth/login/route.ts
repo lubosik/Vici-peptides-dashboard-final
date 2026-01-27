@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     const trimmedAuthUser = authUser.trim()
     const trimmedAuthPass = authPass.trim()
 
-    // Debug logging for troubleshooting
+    // Debug logging for troubleshooting (always log in production to help debug)
     console.log('Login attempt:', {
       providedUsername: trimmedUsername,
       providedPasswordLength: trimmedPassword.length,
@@ -46,6 +46,11 @@ export async function POST(request: NextRequest) {
       userLastChar: trimmedUsername[trimmedUsername.length - 1],
       expectedUserFirstChar: trimmedAuthUser[0],
       expectedUserLastChar: trimmedAuthUser[trimmedAuthUser.length - 1],
+      // Show which env vars were found
+      envVarSource: {
+        user: process.env.NEXT_PUBLIC_BASIC_AUTH_USER ? 'NEXT_PUBLIC_BASIC_AUTH_USER' : 'BASIC_AUTH_USER',
+        pass: process.env.NEXT_PUBLIC_BASIC_AUTH_PASS ? 'NEXT_PUBLIC_BASIC_AUTH_PASS' : 'BASIC_AUTH_PASS',
+      },
     })
 
     // Detailed comparison

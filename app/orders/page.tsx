@@ -10,6 +10,7 @@ import { getOrders, getOrderStatuses } from '@/lib/queries/orders'
 import { formatCurrency, formatPercent } from '@/lib/metrics/calculations'
 import Link from 'next/link'
 import { Search, Download, ChevronLeft, ChevronRight } from 'lucide-react'
+import { RetrieveLineItemsButton } from '@/components/orders/retrieve-line-items-button'
 
 // Force dynamic rendering to ensure real-time data from Supabase
 export const dynamic = 'force-dynamic'
@@ -236,11 +237,17 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                               {order.line_items_count || 0}
                             </TableCell>
                             <TableCell>
-                              <Button variant="ghost" size="sm" asChild>
-                                <Link href={`/orders/${encodeURIComponent(order.order_number)}`}>
-                                  View
-                                </Link>
-                              </Button>
+                              <div className="flex items-center gap-2 justify-end">
+                                <RetrieveLineItemsButton
+                                  orderNumber={order.order_number}
+                                  wooOrderId={order.woo_order_id}
+                                />
+                                <Button variant="ghost" size="sm" asChild>
+                                  <Link href={`/orders/${encodeURIComponent(order.order_number)}`}>
+                                    View
+                                  </Link>
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}

@@ -40,6 +40,7 @@ export async function getOrders(
     .from('orders')
     .select(`
       order_number,
+      woo_order_id,
       order_date,
       customer_name,
       customer_email,

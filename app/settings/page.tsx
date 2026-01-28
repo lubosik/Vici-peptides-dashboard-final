@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { RefreshCw, CheckCircle, AlertCircle } from 'lucide-react'
+import { RefreshCw, CheckCircle, AlertCircle, Database } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 // Force dynamic rendering to prevent build-time errors
@@ -15,28 +15,63 @@ export const dynamic = 'force-dynamic'
 export default function SettingsPage() {
   const router = useRouter()
   const [syncing, setSyncing] = useState(false)
+  const [syncingDashboard, setSyncingDashboard] = useState(false)
   const [syncStatus, setSyncStatus] = useState<{ success: boolean; message: string } | null>(null)
+
+  const handleSyncWholeDashboard = async () => {
+    setSyncingDashboard(true)
+    setSyncStatus(null)
+    try {
+      const response = await fetch('/api/sync/woocommerce', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'incremental',
+          orders: true,
+          products: true,
+          coupons: true,
+        }),
+      })
+      const data = await response.json()
+      if (response.ok && data.success) {
+        const orders = data.results?.orders
+        const msg = orders
+          ? `Synced ${orders.synced ?? 0} orders${orders.errors ? `, ${orders.errors} errors` : ''}.`
+          : 'Dashboard sync completed.'
+        setSyncStatus({ success: true, message: msg })
+        setTimeout(() => router.refresh(), 2000)
+      } else {
+        setSyncStatus({
+          success: false,
+          message: data.error || data.message || 'Failed to sync dashboard',
+        })
+      }
+    } catch (error) {
+      setSyncStatus({
+        success: false,
+        message: 'An error occurred while syncing the dashboard',
+      })
+    } finally {
+      setSyncingDashboard(false)
+    }
+  }
 
   const handleSyncLineItems = async () => {
     setSyncing(true)
     setSyncStatus(null)
-    
     try {
       const response = await fetch('/api/settings/sync-line-items', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
       })
-      
       const data = await response.json()
-      
       if (response.ok) {
         setSyncStatus({
           success: true,
-          message: `Successfully synced line items for ${data.synced} orders. ${data.errors > 0 ? `${data.errors} errors occurred.` : ''}`,
+          message: `Synced line items for ${data.synced ?? 0} orders.${data.errors > 0 ? ` ${data.errors} errors.` : ''}${data.message ? ` ${data.message}` : ''}`,
         })
-        // Refresh the page after a short delay
-        setTimeout(() => {
-          router.refresh()
-        }, 2000)
+        setTimeout(() => router.refresh(), 2000)
       } else {
         setSyncStatus({
           success: false,
@@ -72,11 +107,11 @@ export default function SettingsPage() {
               <CardHeader>
                 <CardTitle>Data Synchronization</CardTitle>
                 <CardDescription>
-                  Sync order line items from WooCommerce to ensure all orders display complete information
+                  Sync orders and line items from WooCommerce so the dashboard stays up to date
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {syncStatus && (
                     <Alert variant={syncStatus.success ? 'default' : 'destructive'}>
                       {syncStatus.success ? (
@@ -87,20 +122,45 @@ export default function SettingsPage() {
                       <AlertDescription>{syncStatus.message}</AlertDescription>
                     </Alert>
                   )}
+
                   <div>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      This will fetch line items from WooCommerce for all orders that are missing them. 
-                      This ensures every order detail page shows what products were ordered.
+                    <p className="text-sm font-medium text-foreground mb-1">Sync whole dashboard</p>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Fetch all updated orders (and products) from WooCommerce. Use this to bring in new orders and keep the dashboard live.
+                    </p>
+                    <Button
+                      onClick={handleSyncWholeDashboard}
+                      disabled={syncingDashboard || syncing}
+                      className="flex items-center gap-2"
+                    >
+                      {syncingDashboard ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 animate-spin" />
+                          Syncing dashboard...
+                        </>
+                      ) : (
+                        <>
+                          <Database className="h-4 w-4" />
+                          Sync all orders from WooCommerce
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-medium text-foreground mb-1">Sync line items only</p>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Fetch line items from WooCommerce for orders that are missing them. Ensures every order detail page shows what products were ordered.
                     </p>
                     <Button
                       onClick={handleSyncLineItems}
-                      disabled={syncing}
+                      disabled={syncing || syncingDashboard}
                       className="flex items-center gap-2"
                     >
                       {syncing ? (
                         <>
                           <RefreshCw className="h-4 w-4 animate-spin" />
-                          Syncing...
+                          Syncing line items...
                         </>
                       ) : (
                         <>

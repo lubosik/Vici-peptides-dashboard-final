@@ -3,23 +3,30 @@ import { Header } from '@/components/header'
 import { DashboardContent } from '@/components/dashboard/dashboard-content'
 import { DashboardClient } from '@/components/dashboard/dashboard-client'
 import { createClient } from '@/lib/supabase/server'
-import { getDashboardKPIs } from '@/lib/metrics/queries'
+import { getDashboardKPIs, getTopProducts, type TopProductsDateRange } from '@/lib/metrics/queries'
 import { getRevenueOverTime } from '@/lib/metrics/queries'
-import { getTopProducts } from '@/lib/metrics/queries'
 import { getNetProfitOverTime } from '@/lib/metrics/net-profit'
 import { getExpenseSummary } from '@/lib/queries/expenses'
 
 // Force dynamic rendering to ensure real-time data
 export const dynamic = 'force-dynamic'
 
-export default async function DashboardPage() {
+interface DashboardPageProps {
+  searchParams: Promise<{ topRange?: string; topFrom?: string; topTo?: string }>
+}
+
+export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   const supabase = await createClient()
+  const params = await searchParams
+  const topRange = (params.topRange || 'all') as TopProductsDateRange
+  const topFrom = params.topFrom
+  const topTo = params.topTo
 
   // Fetch all dashboard data in parallel
   const [kpis, revenueDataRaw, topProductsRaw, netProfitData, expenseSummary] = await Promise.all([
     getDashboardKPIs(supabase, 'all'),
     getRevenueOverTime(supabase, 30),
-    getTopProducts(supabase, 5),
+    getTopProducts(supabase, 5, { range: topRange, dateFrom: topFrom, dateTo: topTo }),
     getNetProfitOverTime(supabase, 30),
     getExpenseSummary(supabase),
   ])
@@ -53,6 +60,7 @@ export default async function DashboardPage() {
                 kpis={kpis}
                 revenueData={revenueData}
                 topProducts={topProducts}
+                topProductsRange={{ range: topRange, dateFrom: topFrom, dateTo: topTo }}
                 netProfitData={netProfitData}
                 expenseSummary={expenseSummary}
               />

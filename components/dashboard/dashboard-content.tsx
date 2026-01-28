@@ -6,13 +6,16 @@ import { ExpenseSummary } from '@/lib/queries/expenses'
 import { RevenueChart } from '@/components/charts/revenue-chart'
 import { NetProfitChart } from '@/components/charts/net-profit-chart'
 import { ExpensesChart } from '@/components/charts/expenses-chart'
+import { TopProductsRangeSelector } from '@/components/dashboard/top-products-range-selector'
 import { formatCurrency, formatPercent } from '@/lib/metrics/calculations'
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import type { TopProductsDateRange } from '@/lib/metrics/queries'
 
 interface DashboardContentProps {
   kpis: DashboardKPIs
   revenueData: Array<{ date: string; revenue: number; profit: number; orders: number }>
   topProducts: Array<{ productId: number; productName: string; revenue: number; qtySold: number; profit: number }>
+  topProductsRange?: { range: TopProductsDateRange; dateFrom?: string; dateTo?: string }
   netProfitData: Array<{ date: string; revenue: number; expenses: number; netProfit: number }>
   expenseSummary: ExpenseSummary
 }
@@ -21,6 +24,7 @@ export function DashboardContent({
   kpis,
   revenueData,
   topProducts,
+  topProductsRange,
   netProfitData,
   expenseSummary,
 }: DashboardContentProps) {
@@ -169,13 +173,24 @@ export function DashboardContent({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
         <Card>
           <CardHeader>
-            <CardTitle>Top 5 Products</CardTitle>
-            <CardDescription>
-              Best selling products by quantity sold (aggregated across all strengths)
-              <span className="block text-xs text-muted-foreground mt-1">
-                Note: BAC Water products are excluded from this list
-              </span>
-            </CardDescription>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <CardTitle>Top 5 Products</CardTitle>
+                <CardDescription>
+                  Best selling by quantity sold (by order date)
+                  <span className="block text-xs text-muted-foreground mt-1">
+                    BAC Water excluded
+                  </span>
+                </CardDescription>
+              </div>
+              {topProductsRange && (
+                <TopProductsRangeSelector
+                  range={topProductsRange.range}
+                  dateFrom={topProductsRange.dateFrom}
+                  dateTo={topProductsRange.dateTo}
+                />
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             {topProducts.length === 0 ? (

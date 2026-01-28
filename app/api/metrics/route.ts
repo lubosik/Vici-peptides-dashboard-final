@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getDashboardKPIs, getRevenueOverTime, getTopProducts } from '@/lib/metrics/queries'
+import { getDashboardKPIs, getRevenueOverTime, getTopProducts, type TopProductsDateRange } from '@/lib/metrics/queries'
 
 // Force dynamic rendering since we use request.url
 export const dynamic = 'force-dynamic'
@@ -23,10 +23,18 @@ export async function GET(request: Request) {
         const revenueData = await getRevenueOverTime(supabase, days)
         return NextResponse.json(revenueData)
 
-      case 'top-products':
+      case 'top-products': {
         const limit = parseInt(searchParams.get('limit') || '10')
-        const products = await getTopProducts(supabase, limit)
+        const range = (searchParams.get('range') || 'all') as TopProductsDateRange
+        const dateFrom = searchParams.get('dateFrom') || undefined
+        const dateTo = searchParams.get('dateTo') || undefined
+        const products = await getTopProducts(supabase, limit, {
+          range,
+          dateFrom,
+          dateTo,
+        })
         return NextResponse.json(products)
+      }
 
       default:
         return NextResponse.json({ error: 'Invalid type' }, { status: 400 })

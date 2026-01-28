@@ -194,14 +194,60 @@ export async function getRevenueOverTime(
   return result
 }
 
+export type TopProductsDateRange = 'day' | 'week' | 'month' | 'year' | 'all' | 'custom'
+
+function getDateRangeForTopProducts(
+  range: TopProductsDateRange,
+  dateFrom?: string,
+  dateTo?: string
+): { from: string; to: string } | null {
+  const now = new Date()
+  const to = new Date(now)
+  to.setHours(23, 59, 59, 999)
+  let from: Date
+
+  if (range === 'custom' && dateFrom && dateTo) {
+    from = new Date(dateFrom)
+    const toDate = new Date(dateTo)
+    toDate.setHours(23, 59, 59, 999)
+    return { from: from.toISOString(), to: toDate.toISOString() }
+  }
+
+  switch (range) {
+    case 'day':
+      from = new Date(now)
+      from.setHours(0, 0, 0, 0)
+      break
+    case 'week':
+      from = new Date(now)
+      from.setDate(now.getDate() - 7)
+      from.setHours(0, 0, 0, 0)
+      break
+    case 'month':
+      from = new Date(now.getFullYear(), now.getMonth(), 1)
+      break
+    case 'year':
+      from = new Date(now.getFullYear(), 0, 1)
+      break
+    case 'all':
+    default:
+      return null
+  }
+  return { from: from.toISOString(), to: to.toISOString() }
+}
+
 /**
  * Get top products by QTY sold (aggregated across all strengths)
- * Excludes BAC Water products
- * Groups products by base name (removes strength variations like "10mg", "20mg")
+ * Excludes BAC Water products. Optional date range filters by order date (when customers placed orders).
  */
 export async function getTopProducts(
   supabase: SupabaseClient,
-  limit: number = 10
+  limit: number = 10,
+  options?: {
+    range?: TopProductsDateRange
+    dateFrom?: string
+    dateTo?: string
+  }
 ): Promise<Array<{
   productId: number
   productName: string
@@ -209,9 +255,24 @@ export async function getTopProducts(
   qtySold: number
   profit: number
 }>> {
-  // Get all order lines with product info
-  // Join with orders to exclude draft/cancelled orders
-  const { data: orderLines, error: linesError } = await supabase
+  const range = options?.range ?? 'all'
+  const dateRange = getDateRangeForTopProducts(range, options?.dateFrom, options?.dateTo)
+
+  let orderNumbers: string[] | null = null
+  if (dateRange) {
+    const { data: ordersInRange } = await supabase
+      .from('orders')
+      .select('order_number')
+      .not('order_status', 'in', '("checkout-draft","cancelled","draft")')
+      .gte('order_date', dateRange.from)
+      .lte('order_date', dateRange.to)
+    orderNumbers = (ordersInRange || []).map((o) => o.order_number)
+    if (orderNumbers.length === 0) {
+      return []
+    }
+  }
+
+  let orderLinesQuery = supabase
     .from('order_lines')
     .select(`
       product_id,
@@ -222,6 +283,12 @@ export async function getTopProducts(
       orders!inner(order_status)
     `)
     .not('orders.order_status', 'in', '("checkout-draft","cancelled","draft")')
+
+  if (orderNumbers && orderNumbers.length > 0) {
+    orderLinesQuery = orderLinesQuery.in('order_number', orderNumbers)
+  }
+
+  const { data: orderLines, error: linesError } = await orderLinesQuery
 
   // Get all products with qty_sold (exclude placeholder products)
   const placeholderIds = [203, 209, 212, 220, 221, 222]
@@ -235,8 +302,8 @@ export async function getTopProducts(
 
   if (productsError) throw productsError
 
-  // If no order lines, fall back to products table qty_sold
-  const useProductsTable = !orderLines || orderLines.length === 0
+  // If no order lines, fall back to products table qty_sold (only when no date range - products.qty_sold is all-time)
+  const useProductsTable = !dateRange && (!orderLines || orderLines.length === 0)
 
   // Helper function to extract base product name (remove strength variations)
   // Examples: "Retatrutide 10mg" -> "Retatrutide", "BPC-157 5mg" -> "BPC-157"
